@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin VB.Form FrmLogin 
-   BackColor       =   &H00FFFFFF&
+   BackColor       =   &H00FF00FF&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "PBV-Login"
    ClientHeight    =   6030
