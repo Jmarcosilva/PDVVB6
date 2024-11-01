@@ -10,9 +10,9 @@ Sub Main()
         MsgBox "Não foi possível conectar ao banco de dados! Verifique a configuração e tente novamente.", vbCritical
         End
     Else
-        MsgBox "Conexão com com banco de dados estabelecida com sucesso!"
+        MsgBox "Conexão com banco de dados estabelecida com sucesso!"
     End If
-    frmLogin.Show
+    FrmLogin.Show
 End Sub
 
 Private Function conectarDB() As Boolean
