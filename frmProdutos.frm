@@ -237,8 +237,11 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
+'--------------------------'ADICIONAR PRODUTOS---------------------------------------'
+
 Private Sub cmdGravar_Click()
 
+   'Validação do formulário
    If txtCodigoBarras.Text = "" Then
       MsgBox "Código de barras não informado!", vbExclamation
       txtCodigoBarras.SetFocus
@@ -257,56 +260,84 @@ Private Sub cmdGravar_Click()
       txtPreco.SetFocus
       Exit Sub
    End If
+   'Fim Validação do formulário
    
-   
-   '-----------------------------------------------------------------'
-    Dim cmd As Object
-    Dim id As String
-    Dim codidoBarras As String
-    Dim descricao As String
-    Dim preco As Double
-    k
-    
-    ' Dados de exemplo para inserção
-    nomeCliente = "João da Silva"
-    emailCliente = "joao.silva@example.com"
-    
-    ' Verifica se a conexão está aberta
-    If conn Is Nothing Then
-        Call Conectar ' Certifique-se de que a conexão está aberta
-    End If
+   On Error GoTo NomeDoErroAqui ' Inicia o tratamento de erros
 
-    ' Cria um novo comando SQL
-    Set cmd = CreateObject("ADODB.Command")
-    cmd.ActiveConnection = conn
-    cmd.CommandText = "INSERT INTO clientes (nome, email) VALUES (?, ?)"
-    cmd.CommandType = 1 ' adCmdText
+   Dim sql As String
+   Dim cmd As New ADODB.Command
     
-    ' Adiciona os parâmetros
-    cmd.Parameters.Append cmd.CreateParameter("nome", 200, 1, 255, nomeCliente) ' 200 = adVarChar, 1 = adParamInput
-    cmd.Parameters.Append cmd.CreateParameter("email", 200, 1, 255, emailCliente)
+   ' Define o comando SQL usando parâmetros
+   sql = "INSERT INTO produtos (codigobarras, descricao, preco) VALUES (?, ?, ?)"
+    
+   'Sem o With ficaria assim
+   'cmd.CommandText = "INSERT INTO produtos (codigobarras, descricao, preco) VALUES (?, ?, ?)"
+                                           '(Nome, TipoDeDado, TipoDeParametro, Tamanho, Valor)
+   'cmd.Parameters.Append cmd.CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text) ' codigobarras
+   'cmd.Parameters.Append cmd.CreateParameter("descricao", adVarChar, adParamInput, 100, txtDescricao.Text) ' descricao
+   'cmd.Parameters.Append cmd.CreateParameter("preco", adDouble, adParamInput, , CDbl(txtPreco.Text)) ' preco
+   'cmd.Execute
+    
+   With cmd
+      .ActiveConnection = conexao
+      .CommandText = sql
+        
+   ' Adiciona parâmetros
+                                          '(Nome, TipoDeDado, TipoDeParametro, Tamanho, Valor)
+      .Parameters.Append .CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text) ' codigobarras
+      .Parameters.Append .CreateParameter("descricao", adVarChar, adParamInput, 100, txtDescricao.Text) ' descricao
+      .Parameters.Append .CreateParameter("preco", adDouble, adParamInput, , CDbl(txtPreco.Text)) ' preco
+      .Execute
+    End With
+    
+    MsgBox "Produto adicionado com sucesso!"
+    
+    ' Limpa os campos do formulário
+    txtCodigoBarras.Text = ""
+    txtDescricao.Text = ""
+    txtPreco.Text = ""
 
-    ' Executa o comando
-    On Error GoTo erro
-    cmd.Execute
-    MsgBox "Cliente inserido com sucesso!", vbInformation
-    
-    ' Fecha o comando
-    Set cmd = Nothing
     Exit Sub
 
-erro:
-    MsgBox "Erro ao inserir cliente: " & Err.Description, vbExclamation
-    Set cmd = Nothing
+NomeDoErroAqui:
+    MsgBox "Erro ao adicionar produto: " & Err.Description ' Exibe mensagem de erro
+      
+   End Sub
 
+   
+   
+   '---------------------------' EXCLUIR PRODUTOS--------------------------------------'
+   
+   Private Sub cmdExcluir_Click()
 
+   On Error GoTo ErrorHandler ' Inicia o tratamento de erros
    
-   '-----------------------------------------------------------------'
+   Dim sql As String
+   Dim cmd As New ADODB.Command
    
+   sql = "DELETE FROM produtos WHERE codigobarras = ?"
    
+   With cmd
+       .ActiveConnection = conexao
+       .CommandText = sql
+       
+       ' Adiciona parâmetro
+       .Parameters.Append .CreateParameter(, adVarChar, adParamInput, 20, txtCodigoBarras.Text) ' codigobarras
+       .Execute
+   End With
    
+   MsgBox "Produto excluído com sucesso!"
+   Exit Sub
    
+ErrorHandler:
+       MsgBox "Erro ao excluir produto: " & Err.Description
 End Sub
+
+'-----------------------------------------------------------------'
+
+   
+   
+
 
    
 
