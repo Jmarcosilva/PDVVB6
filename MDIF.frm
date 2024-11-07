@@ -32,3 +32,4 @@ Option Explicit
 Private Sub mnuProdutos_Click()
    frmProdutos.Show
 End Sub
+
