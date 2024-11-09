@@ -237,170 +237,171 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
-
-
-'PESQUISAR PRODUTOS PELO CODIGO DE BARRAS
+' PESQUISAR PRODUTOS PELO CODIGO DE BARRAS
 Private Sub cmdBuscaCodigoBarras_Click()
-   If txtCodigoBarras.Text = "" Then
-   MsgBox "Codigo de barras não informado!", vbInformation
-   txtCodigoBarras.SetFocus
-   Exit Sub
-   End If
-   
-   Dim cmd As New ADODB.Command
-   Dim rs As ADODB.Recordset 'Recordset = Conjunto de registros
-   
-   cmd.ActiveConnection = conexao
-   
-   cmd.CommandText = "SELECT * FROM produtos WHERE codigobarras=?"
-   cmd.Parameters.Append cmd.CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text) ' codigobarras
-   
-   cmd.Execute
-   
-   Set rs = cmd.Execute
-   
-   If rs.EOF Then 'EOF(End Of File) = Fim do arquivo
-   MsgBox "Nenhumproduto encontrado", vbExclamation
-   Exit Sub
-   End If
-   
-   MsgBox "Produto encontrado com sucesso", vbInformation
-   
-   txtID.Text = rs("id")
-   txtCodigoBarras = rs("codigobarras")
-   txtDescricao = rs("descricao")
-   txtPreco = rs("preco")
-   
+    If txtCodigoBarras.Text = "" Then
+        MsgBox "Codigo de barras não informado!", vbInformation
+        txtCodigoBarras.SetFocus
+        Exit Sub
+    End If
+
+    Dim cmd As New ADODB.Command
+    Dim rs As ADODB.Recordset
+
+    cmd.ActiveConnection = conexao
+    cmd.CommandText = "SELECT * FROM produtos WHERE codigobarras = ?"
+    cmd.Parameters.Append cmd.CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text)
+
+    Set rs = cmd.Execute
+
+    If rs.EOF Then
+        MsgBox "Nenhum produto encontrado", vbExclamation
+        Exit Sub
+    End If
+
+    MsgBox "Produto encontrado com sucesso", vbInformation
+
+    txtID.Text = rs("id")
+    txtDescricao.Text = rs("descricao")
+    txtPreco.Text = rs("preco")
+
+    rs.Close
+    Set rs = Nothing
 End Sub
 
-'--------------------------'ADICIONAR PRODUTOS---------------------------------------'
-
+' ADICIONAR OU ATUALIZAR PRODUTOS
 Private Sub cmdGravar_Click()
+    ' Validação do formulário
+    If txtCodigoBarras.Text = "" Then
+        MsgBox "Código de barras não informado!", vbExclamation
+        txtCodigoBarras.SetFocus
+        Exit Sub
+    End If
 
-   'Validação do formulário
-   If txtCodigoBarras.Text = "" Then
-      MsgBox "Código de barras não informado!", vbExclamation
-      txtCodigoBarras.SetFocus
-      Exit Sub
-   End If
-   
-   If txtDescricao.Text = "" Then
-      MsgBox "Descrição não informada!", vbExclamation
-      txtDescricao.SetFocus
-      Exit Sub
-   End If
-   
-   If txtPreco.Text = "" Or Not IsNumeric(txtPreco.Text) Then
-      MsgBox "Preço inválido!", vbExclamation
-      txtPreco.Text = ""
-      txtPreco.SetFocus
-      Exit Sub
-   End If
-   
-   If ExisteProdutoCodigoBarras() = True Then
-      MsgBox "Codigo de barras já existente", vbExclamation
-      txtCodigoBarras.SetFocus
-      Exit Sub
-   End If
-   
-   'Fim Validação do formulário
-   
-   On Error GoTo NomeDoErroAqui ' Inicia o tratamento de erros
+    If txtDescricao.Text = "" Then
+        MsgBox "Descrição não informada!", vbExclamation
+        txtDescricao.SetFocus
+        Exit Sub
+    End If
 
-   Dim sql As String
-   Dim cmd As New ADODB.Command
-    
-   ' Define o comando SQL usando parâmetros
-   sql = "INSERT INTO produtos (codigobarras, descricao, preco) VALUES (?, ?, ?)"
-    
-   'Sem o With ficaria assim
-   'cmd.CommandText = "INSERT INTO produtos (codigobarras, descricao, preco) VALUES (?, ?, ?)"
-   'cmd.Parameters.Append cmd.CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text) ' codigobarras
-   'cmd.Parameters.Append cmd.CreateParameter("descricao", adVarChar, adParamInput, 100, txtDescricao.Text) ' descricao
-   'cmd.Parameters.Append cmd.CreateParameter("preco", adDouble, adParamInput, , CDbl(txtPreco.Text)) ' preco
-   'cmd.Execute
-    
-   With cmd
-      .ActiveConnection = conexao
-      .CommandText = sql
-      ' Adiciona parâmetros             '(Nome, TipoDeDado, TipoDeParametro, Tamanho, Valor)
-      .Parameters.Append .CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text) ' codigobarras
-      .Parameters.Append .CreateParameter("descricao", adVarChar, adParamInput, 100, txtDescricao.Text) ' descricao
-      .Parameters.Append .CreateParameter("preco", adDouble, adParamInput, , CDbl(txtPreco.Text)) ' preco
-      .Execute
+    If txtPreco.Text = "" Or Not IsNumeric(txtPreco.Text) Then
+        MsgBox "Preço inválido!", vbExclamation
+        txtPreco.Text = ""
+        txtPreco.SetFocus
+        Exit Sub
+    End If
+
+    If ExisteProdutoCodigoBarras() = True And txtID.Text = "" Then
+        MsgBox "Existe um produto cadastrado com este código de barras!", vbExclamation
+        txtCodigoBarras.SetFocus
+        Exit Sub
+    End If
+
+    Dim cmd As New ADODB.Command
+    Dim sql As String
+    cmd.ActiveConnection = conexao
+
+    If txtID.Text = "" Then
+        sql = "INSERT INTO produtos (codigobarras, descricao, preco) VALUES (?, ?, ?)"
+    Else
+    If MsgBox("Deseja realmente fazer alteração?", vbYesNo + vbQuestion) = vbYes Then
+        sql = "UPDATE produtos SET codigobarras = ?, descricao = ?, preco = ? WHERE id = ?"
+    Else
+        Exit Sub
+    End If
+    End If
+
+    With cmd
+        .CommandText = sql
+        .Parameters.Append .CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text)
+        .Parameters.Append .CreateParameter("descricao", adVarChar, adParamInput, 100, txtDescricao.Text)
+        .Parameters.Append .CreateParameter("preco", adDouble, adParamInput, , CDbl(txtPreco.Text))
+
+        If txtID.Text <> "" Then
+            .Parameters.Append .CreateParameter("id", adInteger, adParamInput, , txtID.Text)
+        End If
+
+        .Execute
     End With
+
+    MsgBox "Produto salvo com sucesso!"
+
+    ' Limpa os campos do formulário
+    txtCodigoBarras.Text = ""
+    txtDescricao.Text = ""
+    txtPreco.Text = ""
+    txtID.Text = ""
+End Sub
+
+' FUNÇÃO PARA VALIDAR SE JA EXISTE UM CODIGO BARRAS
+Private Function ExisteProdutoCodigoBarras() As Boolean
+    Dim cmd As New ADODB.Command
+    Dim rs As ADODB.Recordset
+    Dim sql As String
+
+    On Error GoTo TrataErro
+
+    cmd.ActiveConnection = conexao
+    sql = "SELECT 1 FROM produtos WHERE codigobarras = ?"
     
-    MsgBox "Produto adicionado com sucesso!"
+    If txtID.Text <> "" Then
+        sql = sql & " AND id <> ?"
+    End If
+
+    cmd.CommandText = sql
+    cmd.Parameters.Append cmd.CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text)
+
+    If txtID.Text <> "" Then
+        cmd.Parameters.Append cmd.CreateParameter("id", adInteger, adParamInput, , CInt(txtID.Text))
+    End If
+
+    Set rs = cmd.Execute
+    ExisteProdutoCodigoBarras = Not rs.EOF
+
+    rs.Close
+    Set rs = Nothing
+    Set cmd = Nothing
+    Exit Function
+
+TrataErro:
+    MsgBox "Erro ao verificar produto: " & Err.Description, vbCritical
+    ExisteProdutoCodigoBarras = False
+    If Not rs Is Nothing Then rs.Close
+    Set rs = Nothing
+    Set cmd = Nothing
+End Function
+
+' EXCLUIR PRODUTOS
+Private Sub cmdExcluir_Click()
+
+    If txtID = "" Then
+         MsgBox "nenhum produto selecionado!", vbExclamation
+         txtCodigoBarras.SetFocus
+         Exit Sub
+    End If
+    
+    If MsgBox("Deseja realmente excluir o registro?", vbYesNo + vbQuestion) = vbNo Then
+        Exit Sub
+    End If
+
+    Dim cmd As New ADODB.Command
+    On Error GoTo ErrorHandler
+
+    cmd.ActiveConnection = conexao
+    cmd.CommandText = "DELETE FROM produtos WHERE codigobarras = ?"
+    cmd.Parameters.Append cmd.CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text)
+    cmd.Execute
+
+    MsgBox "Produto excluído com sucesso!"
     
     ' Limpa os campos do formulário
     txtCodigoBarras.Text = ""
     txtDescricao.Text = ""
     txtPreco.Text = ""
-
+    txtID.Text = ""
     Exit Sub
 
-NomeDoErroAqui:
-    MsgBox "Erro ao adicionar produto: " & Err.Description ' Exibe mensagem de erro
-      
-   End Sub
-
-   
-    '---------------------------' PESQUISAR PRODUTOS (READ , LER)--------------------------------------'
-
-   Private Function ExisteProdutoCodigoBarras() As Boolean
-      Dim sql As String
-      Dim cmd As New ADODB.Command
-      Dim rs As ADODB.Recordset 'Recordset = Conjunto de registros
-      cmd.ActiveConnection = conexao
-      sql = "SELECT 1 FROM PRODUTOS WHERE codigobarras = ?"
-      cmd.CommandText = sql
-      cmd.Parameters.Append cmd.CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text) ' codigobarras
-      Set rs = cmd.Execute
-      ExisteProdutoCodigoBarras = Not rs.EOF  'EOF(End Of File) = Fim do arquivo
-   End Function
-
-   '--------------------------------------------------------------------------------------------------'
-
-
-
-
-
-
-
-
-
-
-   '---------------------------' EXCLUIR PRODUTOS--------------------------------------'
-   
-   Private Sub cmdExcluir_Click()
-
-   On Error GoTo ErrorHandler ' Inicia o tratamento de erros
-   
-   Dim cmd As New ADODB.Command
-   
-      cmd.ActiveConnection = conexao
-      cmd.CommandText = "DELETE FROM produtos WHERE codigobarras = ?"
-      ' Adiciona parâmetro
-      cmd.Parameters.Append cmd.CreateParameter(, adVarChar, adParamInput, 20, txtCodigoBarras.Text) ' codigobarras
-      cmd.Execute
-      
-   MsgBox "Deseja realmente excluir o registro?", vbYesNo + vbQuestion
-  
-   MsgBox "Produto excluído com sucesso!"
-   Exit Sub
-   
 ErrorHandler:
-       MsgBox "Erro ao excluir produto: " & Err.Description
+    MsgBox "Erro ao excluir produto: " & Err.Description
 End Sub
-
-'-----------------------------------------------------------------'
-
-   
-   
-
-
-   
-
-
-
 
