@@ -2,17 +2,17 @@ VERSION 5.00
 Begin VB.Form frmProdutos 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Cadastro de aprodutos"
-   ClientHeight    =   6915
+   ClientHeight    =   11985
    ClientLeft      =   45
    ClientTop       =   390
    ClientWidth     =   10590
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MDIChild        =   -1  'True
-   ScaleHeight     =   6915
+   ScaleHeight     =   11985
    ScaleWidth      =   10590
    Begin VB.CommandButton cmdBuscar 
-      Caption         =   "&BUSCAR"
+      Caption         =   "&NOVO"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
          Size            =   9.75
@@ -269,6 +269,10 @@ Private Sub cmdBuscaCodigoBarras_Click()
     Set rs = Nothing
 End Sub
 
+Private Sub cmdBuscar_Click()
+   Call LimparCampos
+End Sub
+
 ' ADICIONAR OU ATUALIZAR PRODUTOS
 Private Sub cmdGravar_Click()
     ' Validação do formulário
@@ -327,10 +331,7 @@ Private Sub cmdGravar_Click()
     MsgBox "Produto salvo com sucesso!"
 
     ' Limpa os campos do formulário
-    txtCodigoBarras.Text = ""
-    txtDescricao.Text = ""
-    txtPreco.Text = ""
-    txtID.Text = ""
+   Call LimparCampos
 End Sub
 
 ' FUNÇÃO PARA VALIDAR SE JA EXISTE UM CODIGO BARRAS
@@ -395,13 +396,26 @@ Private Sub cmdExcluir_Click()
     MsgBox "Produto excluído com sucesso!"
     
     ' Limpa os campos do formulário
-    txtCodigoBarras.Text = ""
-    txtDescricao.Text = ""
-    txtPreco.Text = ""
-    txtID.Text = ""
-    Exit Sub
+    Call LimparCampos
 
 ErrorHandler:
     MsgBox "Erro ao excluir produto: " & Err.Description
 End Sub
+
+'SUB OU FUNCTION PARA LIMPAR CAMPOS
+Private Sub LimparCampos()
+    txtCodigoBarras.Text = ""
+    txtDescricao.Text = ""
+    txtPreco.Text = ""
+    txtID.Text = ""
+End Sub
+
+
+
+
+
+
+
+
+
 
