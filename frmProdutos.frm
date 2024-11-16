@@ -244,6 +244,21 @@ Private Sub cmdBuscaCodigoBarras_Click()
         txtCodigoBarras.SetFocus
         Exit Sub
     End If
+    
+    '++++++++++++++++++++++++++++++++++++++++++++
+    If Not IsNumeric(txtCodigoBarras.Text) Then
+        MsgBox "Codigo de barras deve ser numerico!", vbInformation
+        txtCodigoBarras.SetFocus
+        Exit Sub
+    End If
+    
+    If Len(txtCodigoBarras.Text) > 20 Then
+        MsgBox "Codigo de barras não deve ter mais que 20 algarismos!", vbInformation
+        txtCodigoBarras.SetFocus
+        Exit Sub
+    End If
+    '+++++++++++++++++++++++++++++++++++++++++++++++++
+    
 
     Dim cmd As New ADODB.Command
     Dim rs As ADODB.Recordset
@@ -253,7 +268,7 @@ Private Sub cmdBuscaCodigoBarras_Click()
     cmd.Parameters.Append cmd.CreateParameter("codigobarras", adVarChar, adParamInput, 20, txtCodigoBarras.Text)
 
     Set rs = cmd.Execute
-
+    
     If rs.EOF Then
         MsgBox "Nenhum produto encontrado", vbExclamation
         Exit Sub
